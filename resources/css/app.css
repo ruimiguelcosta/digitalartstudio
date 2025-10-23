@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+:root {
+  --background: 0 0% 98%;
+  --foreground: 240 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 10%;
+  --primary: 262 52% 47%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 10% 10%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 262 52% 47%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 262 52% 47%;
+  --radius: 0.75rem;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(262 52% 47%) 0%, hsl(252 56% 57%) 100%);
+  --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(240 5% 98%) 100%);
+  
+  /* Shadows */
+  --shadow-elegant: 0 10px 30px -10px hsl(262 52% 47% / 0.2);
+  --shadow-soft: 0 4px 16px -2px hsl(240 10% 10% / 0.08);
+  --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px 0 hsl(0 0% 0% / 0.06);
+  --shadow-button: 0 4px 14px 0 hsl(262 52% 47% / 0.25);
+}
+
+.dark {
+  --background: 240 10% 8%;
+  --foreground: 0 0% 98%;
+  --card: 240 8% 12%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 8% 12%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 262 52% 57%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 262 52% 57%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 4% 20%;
+  --input: 240 4% 20%;
+  --ring: 262 52% 57%;
+  
+  --gradient-primary: linear-gradient(135deg, hsl(262 52% 57%) 0%, hsl(252 56% 67%) 100%);
+  --gradient-subtle: linear-gradient(180deg, hsl(240 8% 12%) 0%, hsl(240 10% 8%) 100%);
+  --shadow-elegant: 0 10px 30px -10px hsl(262 52% 57% / 0.3);
+  --shadow-soft: 0 4px 16px -2px hsl(0 0% 0% / 0.2);
+  --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+  --shadow-button: 0 4px 14px 0 hsl(262 52% 57% / 0.35);
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: var(--gradient-subtle);
+  color: hsl(var(--foreground));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom utility classes */
+.bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+
+.shadow-elegant {
+  box-shadow: var(--shadow-elegant);
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-button {
+  box-shadow: var(--shadow-button);
+}
+
+/* Enhanced button styles */
+.btn-primary {
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-button);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 hsl(262 52% 47% / 0.3);
+}
+
+/* Card enhancements */
+.card-elevated {
+  background: hsl(var(--card));
+  box-shadow: var(--shadow-card);
+  border: 1px solid hsl(var(--border) / 0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* Input focus states */
+.input-focus:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+  outline: none;
+}
+
+/* Tab styles */
+.tab-active {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-soft);
+}
+
+.tab-inactive {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Logo gradient */
+.logo-gradient {
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-elegant);
+}
