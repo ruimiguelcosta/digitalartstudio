@@ -56,6 +56,11 @@ class Photo extends Model
         return Storage::url($value);
     }
 
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
     public function getFormattedFileSizeAttribute(): string
     {
         $bytes = $this->file_size;
