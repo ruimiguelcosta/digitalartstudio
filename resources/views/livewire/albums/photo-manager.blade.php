@@ -395,3 +395,40 @@
         </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('livewire:init', function () {
+    let refreshInterval;
+    
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            @this.call('refreshPhotos');
+        }, 3000); // Refresh every 3 seconds
+    }
+    
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+    
+    // Start auto-refresh when component loads
+    startAutoRefresh();
+    
+    // Stop auto-refresh when component is destroyed
+    document.addEventListener('livewire:before-unload', function () {
+        stopAutoRefresh();
+    });
+    
+    // Stop auto-refresh when user is interacting with modals
+    document.addEventListener('livewire:modal:opened', function () {
+        stopAutoRefresh();
+    });
+    
+    // Resume auto-refresh when modals are closed
+    document.addEventListener('livewire:modal:closed', function () {
+        startAutoRefresh();
+    });
+});
+</script>

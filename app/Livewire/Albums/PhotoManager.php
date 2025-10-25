@@ -86,6 +86,11 @@ class PhotoManager extends Component
         $this->photos = $this->album->photos()->orderBy('order')->get()->toArray();
     }
 
+    public function refreshPhotos()
+    {
+        $this->loadPhotos();
+    }
+
     public function openUploadModal()
     {
         $this->showUploadModal = true;
