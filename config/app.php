@@ -30,6 +30,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Image Processing Mode
+    |--------------------------------------------------------------------------
+    |
+    | This value determines if image processing should be synchronous or
+    | asynchronous. When true, images are processed immediately during upload.
+    | When false, images are processed via background jobs (requires queue).
+    |
+    */
+
+    'is_sync' => env('IS_SYNC', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

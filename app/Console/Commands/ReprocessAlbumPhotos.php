@@ -51,7 +51,8 @@ class ReprocessAlbumPhotos extends Command
         $dispatchedCount = 0;
 
         foreach ($photos as $photo) {
-            OptimizeImageJob::dispatch($photo);
+            OptimizeImageJob::dispatch($photo)
+                ->onQueue('optimize-images');
             $dispatchedCount++;
             $bar->advance();
         }

@@ -199,7 +199,7 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['optimize-images'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
@@ -219,7 +219,7 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
                 'maxTime' => 0,
-                'maxJobs' =>25,
+                'maxJobs' => 25,
                 'memory' => 256,
                 'tries' => 3,
                 'timeout' => 300,

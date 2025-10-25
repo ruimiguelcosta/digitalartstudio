@@ -11,32 +11,40 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::query()->create([
-            'name' => 'Rui Costa',
-            'email' => 'rui.costa@inovador.net',
-            'password' => Hash::make('!PassWord@1234!5678'),
-            'role' => UserRole::ADMIN->value,
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'rui.costa@inovador.net'],
+            [
+                'name' => 'Rui Costa',
+                'password' => Hash::make('!PassWord@1234!5678'),
+                'role' => UserRole::ADMIN->value,
+            ]
+        );
 
-        User::query()->create([
-            'name' => 'António Braga',
-            'email' => 'digitalartstudio.pt@gmail.com',
-            'password' => Hash::make('!PassWord@1234!5678'),
-            'role' => UserRole::ADMIN->value,
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'digitalartstudio.pt@gmail.com'],
+            [
+                'name' => 'António Braga',
+                'password' => Hash::make('!PassWord@1234!5678'),
+                'role' => UserRole::ADMIN->value,
+            ]
+        );
 
-        User::query()->create([
-            'name' => 'Gestor',
-            'email' => 'manager@digitalartstudio.com',
-            'password' => Hash::make('!PassWord@1234!5678'),
-            'role' => UserRole::MANAGER->value,
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'manager@digitalartstudio.com'],
+            [
+                'name' => 'Gestor',
+                'password' => Hash::make('!PassWord@1234!5678'),
+                'role' => UserRole::MANAGER->value,
+            ]
+        );
 
-        User::query()->create([
-            'name' => 'Utilizador',
-            'email' => 'user@digitalartstudio.com',
-            'password' => Hash::make('!PassWord@1234!5678'),
-            'role' => UserRole::USER->value,
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'user@digitalartstudio.com'],
+            [
+                'name' => 'Utilizador',
+                'password' => Hash::make('!PassWord@1234!5678'),
+                'role' => UserRole::USER->value,
+            ]
+        );
     }
 }
