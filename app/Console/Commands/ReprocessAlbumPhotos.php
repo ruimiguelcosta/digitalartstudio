@@ -39,11 +39,7 @@ class ReprocessAlbumPhotos extends Command
             $processedCount = $photos->whereNotNull('url')->count();
             if ($processedCount > 0) {
                 $this->warn("{$processedCount} photos appear to be already processed.");
-                if (! $this->confirm('Do you want to reprocess them anyway?')) {
-                    $this->info('Operation cancelled.');
-
-                    return 0;
-                }
+                $this->info('Reprocessing them anyway...');
             }
         }
 
