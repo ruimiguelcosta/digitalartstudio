@@ -24,6 +24,10 @@ class PhotoManager extends Component
 
     public $isUploading = false;
 
+    public $showDeleteModal = false;
+
+    public $photoToDelete = null;
+
     protected function rules()
     {
         return [
@@ -104,6 +108,18 @@ class PhotoManager extends Component
         }
     }
 
+    public function confirmDelete($photoId)
+    {
+        $this->photoToDelete = $photoId;
+        $this->showDeleteModal = true;
+    }
+
+    public function cancelDelete()
+    {
+        $this->showDeleteModal = false;
+        $this->photoToDelete = null;
+    }
+
     public function updatedUploadedPhotos()
     {
         $this->validate();
@@ -156,23 +172,32 @@ class PhotoManager extends Component
         }
     }
 
-    public function deletePhoto($photoId)
+    public function deletePhoto()
     {
-        $photo = Photo::query()->findOrFail($photoId);
+        if (! $this->photoToDelete) {
+            return;
+        }
+
+        $photo = Photo::query()->findOrFail($this->photoToDelete);
 
         if ($photo->album->user_id !== auth()->id()) {
             session()->flash('error', 'Não tem permissão para excluir esta foto.');
+            $this->cancelDelete();
 
             return;
         }
 
         // Delete file from storage
-        Storage::disk('public')->delete('photos/'.$photo->filename);
+        Storage::disk('public')->delete($photo->path);
 
         // Delete from database
         $photo->delete();
 
         $this->loadPhotos();
+
+        // Close modal
+        $this->cancelDelete();
+
         session()->flash('message', 'Foto excluída com sucesso!');
     }
 

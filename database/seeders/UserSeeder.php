@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
 
         User::query()->create([
             'name' => 'António Braga',
-            'email' => 'digitalartstudio.p2gmail.com',
+            'email' => 'digitalartstudio.pt@gmail.com',
             'password' => Hash::make('!PassWord@1234!5678'),
             'role' => UserRole::ADMIN->value,
         ]);

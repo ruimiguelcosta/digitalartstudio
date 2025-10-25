@@ -44,15 +44,11 @@ class OptimizeImageJob implements ShouldQueue
         $image->toJpeg(85)->save($fullProcessedPath);
 
         if (file_exists($fullProcessedPath)) {
-            $originalPath = $this->photo->path;
-
             $this->photo->update([
                 'path' => $processedPath,
                 'file_size' => Storage::disk('public')->size($processedPath),
                 'url' => Storage::disk('public')->url($processedPath),
             ]);
-
-            Storage::disk('public')->delete($originalPath);
         } else {
             throw new \Exception('Failed to save processed image');
         }
@@ -63,7 +59,7 @@ class OptimizeImageJob implements ShouldQueue
         $width = $image->width();
         $height = $image->height();
         $text = 'Digital Art Studio';
-        $fontSize = min($width, $height) / 20;
+        $fontSize = 40;
         $angle = -45;
 
         $image->text($text, $width / 2, $height / 2, function ($font) use ($fontSize, $angle) {

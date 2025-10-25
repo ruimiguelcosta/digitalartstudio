@@ -75,27 +75,24 @@
                 <div class="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                     <img 
                         src="{{ Storage::disk('public')->url($photo['path']) }}" 
-                        alt="{{ $photo['original_filename'] }}"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        alt="{{ $photo['original_filename'] ?? $photo['filename'] ?? 'Photo' }}"
+                        class="w-full h-full object-cover"
                     />
                     
-                    <!-- Overlay -->
-                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
-                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
-                            <button 
-                                wire:click="deletePhoto({{ $photo['id'] }})"
-                                wire:confirm="Tem certeza que deseja excluir esta foto?"
-                                class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
-                            >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
+                    <!-- Botão de eliminar sempre visível -->
+                    <div class="absolute" style="top: 10px; left: 10px;">
+                        <button 
+                            wire:click="confirmDelete('{{ $photo['id'] }}')"
+                            class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
                     </div>
                     
                     <!-- Order Badge -->
-                    <div class="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                    <div class="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
                         {{ $photo['order'] }}
                     </div>
                 </div>
@@ -350,6 +347,49 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal de Confirmação de Eliminação -->
+    @if($showDeleteModal)
+        <div class="fixed inset-0 flex items-center justify-center p-4 z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full border-2 border-red-500 shadow-elegant">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                Confirmar Eliminação
+                            </h3>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                            Tem certeza que deseja eliminar esta foto? Esta ação não pode ser desfeita.
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button 
+                            wire:click="cancelDelete"
+                            class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            wire:click="deletePhoto"
+                            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            Eliminar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
