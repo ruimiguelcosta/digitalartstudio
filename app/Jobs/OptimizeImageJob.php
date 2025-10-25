@@ -29,7 +29,7 @@ class OptimizeImageJob implements ShouldQueue
 
         $image = $manager->read($originalPath);
 
-        $image->scaleDown(1920, 1080);
+        $image->scaleDown(600, null);
 
         $this->addWatermark($image);
 
@@ -58,37 +58,69 @@ class OptimizeImageJob implements ShouldQueue
     {
         $width = $image->width();
         $height = $image->height();
-        $text = 'Digital Art Studio';
-        $fontSize = 40;
+        $text = 'Digital Art Studio - PREVIEW ONLY';
+        $fontSize = max(24, min($width, $height) / 20);
         $angle = -45;
+
+        $this->addMainWatermark($image, $text, $fontSize, $angle);
+        $this->addRepeatedWatermark($image, $text, $fontSize, $angle);
+        $this->addCornerWatermarks($image, $text, $fontSize);
+    }
+
+    private function addMainWatermark(ImageInterface $image, string $text, int $fontSize, int $angle): void
+    {
+        $width = $image->width();
+        $height = $image->height();
 
         $image->text($text, $width / 2, $height / 2, function ($font) use ($fontSize, $angle) {
             $font->size($fontSize);
-            $font->color('rgba(255, 255, 255, 0.3)');
+            $font->color('rgba(255, 255, 255, 0.8)');
             $font->align('center');
             $font->valign('middle');
             $font->angle($angle);
         });
-
-        $this->addRepeatedWatermark($image, $text, $fontSize, $angle);
     }
 
     private function addRepeatedWatermark(ImageInterface $image, string $text, int $fontSize, int $angle): void
     {
         $width = $image->width();
         $height = $image->height();
-        $spacing = 200;
+        $spacing = max(80, $height / 14);
 
         for ($x = -$width; $x < $width * 2; $x += $spacing) {
             for ($y = -$height; $y < $height * 2; $y += $spacing) {
                 $image->text($text, $x, $y, function ($font) use ($fontSize, $angle) {
-                    $font->size($fontSize);
-                    $font->color('rgba(255, 255, 255, 0.15)');
+                    $font->size($fontSize * 0.7);
+                    $font->color('rgba(255, 255, 255, 0.4)');
                     $font->align('center');
                     $font->valign('middle');
                     $font->angle($angle);
                 });
             }
+        }
+    }
+
+    private function addCornerWatermarks(ImageInterface $image, string $text, int $fontSize): void
+    {
+        $width = $image->width();
+        $height = $image->height();
+        $cornerFontSize = $fontSize * 0.6;
+        $margin = 20;
+
+        $corners = [
+            [$margin, $margin],
+            [$width - $margin, $margin],
+            [$margin, $height - $margin],
+            [$width - $margin, $height - $margin],
+        ];
+
+        foreach ($corners as $corner) {
+            $image->text('PREVIEW', $corner[0], $corner[1], function ($font) use ($cornerFontSize, $corner, $width) {
+                $font->size($cornerFontSize);
+                $font->color('rgba(255, 0, 0, 0.9)');
+                $font->align($corner[0] < $width / 2 ? 'left' : 'right');
+                $font->valign($corner[1] < $width / 2 ? 'top' : 'bottom');
+            });
         }
     }
 }
