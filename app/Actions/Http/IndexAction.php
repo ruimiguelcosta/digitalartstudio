@@ -8,6 +8,6 @@ class IndexAction
 {
     public function __invoke(): View
     {
-        return view('index');
+        return view('welcome');
     }
 }

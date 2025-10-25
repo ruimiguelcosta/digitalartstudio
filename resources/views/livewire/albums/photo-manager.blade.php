@@ -25,20 +25,20 @@
             
             <div class="flex items-center space-x-3">
                 @if(!$album->is_public)
-                    <button 
-                        wire:click="publishAlbum"
-                        class="btn-primary"
-                    >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                        Publicar Álbum
-                    </button>
+                <button 
+                    wire:click="publishAlbum"
+                    class="btn-logo inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg"
+                >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    Publicar Álbum
+                </button>
                 @endif
                 
                 <button 
                     wire:click="openUploadModal"
-                    class="btn-secondary"
+                    class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-all duration-200 inline-flex items-center justify-center"
                 >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -74,8 +74,8 @@
             @foreach($photos as $photo)
                 <div class="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                     <img 
-                        src="{{ Storage::disk('public')->url('photos/' . $photo['filename']) }}" 
-                        alt="{{ $photo['original_name'] }}"
+                        src="{{ Storage::disk('public')->url($photo['path']) }}" 
+                        alt="{{ $photo['original_filename'] }}"
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     />
                     
@@ -116,7 +116,7 @@
             </p>
             <button 
                 wire:click="openUploadModal"
-                class="btn-primary inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-white h-10 px-4 py-2"
+                class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition-all duration-200 inline-flex items-center justify-center"
             >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -253,14 +253,14 @@
 
     <!-- Upload Modal -->
     @if($showUploadModal)
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="fixed inset-0 flex items-center justify-center p-4 z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border-2 border-primary shadow-elegant">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold">Adicionar Fotos</h2>
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Adicionar Fotos</h2>
                         <button 
                             wire:click="closeUploadModal"
-                            class="text-gray-400 hover:text-gray-600"
+                            class="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
                         >
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -268,29 +268,53 @@
                         </button>
                     </div>
 
-                    <form wire:submit="uploadPhotos" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Selecionar Fotos</label>
-                            <input 
-                                type="file" 
-                                wire:model="uploadedPhotos"
-                                multiple
-                                accept="image/*"
-                                class="input-focus flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                            @error('uploadedPhotos.*') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                            <p class="text-xs text-muted-foreground mt-1">
-                                Máximo 10MB por foto. Formatos aceitos: JPG, PNG, GIF, WebP
+                    <form wire:submit="uploadPhotos" class="space-y-6">
+                        <div class="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer" onclick="document.getElementById('photo-upload').click()">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-8 h-8 text-gray-400 dark:text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <h3 class="text-base font-medium text-gray-900 dark:text-white mb-2">Selecionar Fotos</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-300 mb-3">Arraste e solte as suas fotos aqui ou clique para selecionar</p>
+                                <input 
+                                    type="file" 
+                                    wire:model="uploadedPhotos"
+                                    multiple
+                                    accept="image/*"
+                                    class="hidden"
+                                    id="photo-upload"
+                                />
+                            </div>
+                            @error('uploadedPhotos.*') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
+                            @error('uploadedPhotos') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
+                            <p class="text-xs text-muted-foreground mt-3">
+                                Máximo {{ config('photos.max_count') }} fotos por upload. {{ config('photos.max_size_mb') }}MB por foto. Formatos: JPG, PNG, GIF, WebP
                             </p>
                         </div>
 
                         @if($uploadedPhotos)
-                            <div class="space-y-2">
-                                <h3 class="text-sm font-medium">Fotos Selecionadas:</h3>
-                                <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Fotos Selecionadas ({{ count($uploadedPhotos) }}):</h3>
+                                <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                                     @foreach($uploadedPhotos as $index => $photo)
-                                        <div class="text-xs text-muted-foreground">
-                                            {{ $photo->getClientOriginalName() }}
+                                        <div class="flex items-center justify-between bg-white dark:bg-gray-600 rounded-md p-2 border border-gray-200 dark:border-gray-500">
+                                            <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                                <button 
+                                                    type="button"
+                                                    wire:click="removePhoto({{ $index }})"
+                                                    class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors flex-shrink-0"
+                                                    title="Remover foto"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                                <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span class="text-sm text-gray-700 dark:text-gray-200 truncate">{{ $photo->getClientOriginalName() }}</span>
+                                            </div>
+                                            <span class="text-xs text-gray-500 dark:text-gray-300 flex-shrink-0 ml-2">{{ round($photo->getSize() / 1024 / 1024, 2) }}MB</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -301,14 +325,14 @@
                             <button 
                                 type="button"
                                 wire:click="closeUploadModal"
-                                class="btn-secondary flex-1"
+                                class="btn-secondary flex-1 inline-flex items-center justify-center px-4 py-2 text-secondary-foreground font-medium rounded-md"
                                 @if($isUploading) disabled @endif
                             >
                                 Cancelar
                             </button>
                             <button 
                                 type="submit"
-                                class="btn-primary flex-1"
+                                class="upload-button-fix"
                                 @if($isUploading) disabled @endif
                             >
                                 @if($isUploading)
@@ -318,6 +342,9 @@
                                     </svg>
                                     Fazendo Upload...
                                 @else
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
                                     Fazer Upload
                                 @endif
                             </button>

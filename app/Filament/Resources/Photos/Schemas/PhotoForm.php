@@ -27,7 +27,7 @@ class PhotoForm
                     ->label('Foto')
                     ->image()
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/gif'])
-                    ->maxSize(10240)
+                    ->maxSize(config('photos.max_size_mb') * 1024) // Use our dynamic config
                     ->required()
                     ->disk('public')
                     ->directory('photos'),

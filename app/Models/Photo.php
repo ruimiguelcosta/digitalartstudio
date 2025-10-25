@@ -16,6 +16,7 @@ class Photo extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
+        'ref',
         'title',
         'description',
         'filename',

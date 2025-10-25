@@ -24,15 +24,52 @@ class PhotoManager extends Component
 
     public $isUploading = false;
 
-    protected $rules = [
-        'uploadedPhotos.*' => 'required|image|max:10240', // 10MB max
-    ];
+    protected function rules()
+    {
+        return [
+            'uploadedPhotos.*' => 'required|image|max:'.(config('photos.max_size_mb') * 1024), // Convert MB to KB
+            'uploadedPhotos' => 'max:'.config('photos.max_count'),
+        ];
+    }
 
-    protected $messages = [
-        'uploadedPhotos.*.required' => 'Selecione pelo menos uma foto.',
-        'uploadedPhotos.*.image' => 'O arquivo deve ser uma imagem válida.',
-        'uploadedPhotos.*.max' => 'A imagem não pode ser maior que 10MB.',
-    ];
+    protected function messages()
+    {
+        return [
+            'uploadedPhotos.*.required' => 'Selecione pelo menos uma foto.',
+            'uploadedPhotos.*.image' => 'O arquivo deve ser uma imagem válida.',
+            'uploadedPhotos.*.max' => 'A imagem não pode ser maior que '.config('photos.max_size_mb').'MB.',
+            'uploadedPhotos.max' => 'Máximo '.config('photos.max_count').' fotos por upload.',
+        ];
+    }
+
+    private function generatePhotoRef(): string
+    {
+        $albumTitle = $this->album->title;
+
+        $words = explode(' ', $albumTitle);
+        $initials = '';
+
+        foreach ($words as $word) {
+            if (! empty(trim($word))) {
+                $initials .= strtoupper(substr($word, 0, 1));
+            }
+        }
+
+        $lastPhoto = Photo::query()
+            ->where('album_id', $this->album->id)
+            ->where('ref', 'like', $initials.'-%')
+            ->orderBy('ref', 'desc')
+            ->first();
+
+        if ($lastPhoto && $lastPhoto->ref) {
+            $lastNumber = (int) substr($lastPhoto->ref, strrpos($lastPhoto->ref, '-') + 1);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return $initials.'-'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+    }
 
     public function mount(Album $album)
     {
@@ -58,6 +95,15 @@ class PhotoManager extends Component
         $this->resetErrorBag();
     }
 
+    public function removePhoto($index)
+    {
+        if (isset($this->uploadedPhotos[$index])) {
+            unset($this->uploadedPhotos[$index]);
+            $this->uploadedPhotos = array_values($this->uploadedPhotos);
+            $this->resetErrorBag();
+        }
+    }
+
     public function updatedUploadedPhotos()
     {
         $this->validate();
@@ -73,15 +119,26 @@ class PhotoManager extends Component
             $uploadedCount = 0;
 
             foreach ($this->uploadedPhotos as $photo) {
-                $path = $photo->store('photos', 'public');
+                $ref = $this->generatePhotoRef();
+                $extension = $photo->getClientOriginalExtension();
+                $newFilename = $ref.'.'.$extension;
+
+                // Criar estrutura de pastas: photos/slug-album/nome-da-foto
+                $albumFolder = 'photos/'.$this->album->slug;
+                $path = $photo->storeAs($albumFolder, $newFilename, 'public');
 
                 Photo::query()->create([
+                    'ref' => $ref,
                     'album_id' => $this->album->id,
-                    'filename' => basename($path),
-                    'original_name' => $photo->getClientOriginalName(),
+                    'title' => pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME), // Extract filename without extension
+                    'filename' => $newFilename,
+                    'original_filename' => $photo->getClientOriginalName(),
                     'mime_type' => $photo->getMimeType(),
-                    'size' => $photo->getSize(),
+                    'file_size' => $photo->getSize(),
+                    'path' => $path, // Add the full path
+                    'url' => Storage::disk('public')->url($path), // Add the public URL
                     'order' => $this->album->photos()->count() + $uploadedCount + 1,
+                    'user_id' => auth()->id(),
                 ]);
 
                 $uploadedCount++;
