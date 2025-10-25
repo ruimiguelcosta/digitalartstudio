@@ -10,16 +10,10 @@ class AlbumForm
     {
         return $schema
             ->components([
-                \Filament\Schemas\Components\Grid::make(2)
-                    ->schema([
-                        \Filament\Schemas\Components\TextInput::make('title')
-                            ->label('Título')
-                            ->required()
-                            ->maxLength(255),
-                        \Filament\Schemas\Components\Toggle::make('is_public')
-                            ->label('Público')
-                            ->default(false),
-                    ]),
+                \Filament\Schemas\Components\TextInput::make('title')
+                    ->label('Título')
+                    ->required()
+                    ->maxLength(255),
                 \Filament\Schemas\Components\Textarea::make('description')
                     ->label('Descrição')
                     ->maxLength(1000)

@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 class Album extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'title',
         'description',
+        'event_start_date',
+        'event_end_date',
         'slug',
         'is_public',
         'user_id',
@@ -22,6 +25,8 @@ class Album extends Model
 
     protected $casts = [
         'is_public' => 'boolean',
+        'event_start_date' => 'date',
+        'event_end_date' => 'date',
     ];
 
     protected static function boot()
@@ -54,6 +59,11 @@ class Album extends Model
     public function featuredPhoto(): HasMany
     {
         return $this->hasMany(Photo::class)->where('is_featured', true);
+    }
+
+    public function accesses(): HasMany
+    {
+        return $this->hasMany(AlbumAccess::class)->latest('accessed_at');
     }
 
     public function getRouteKeyName(): string

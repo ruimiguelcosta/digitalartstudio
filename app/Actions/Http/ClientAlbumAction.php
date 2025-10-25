@@ -11,4 +11,3 @@ class ClientAlbumAction
         return view('client-album', compact('id'));
     }
 }
-

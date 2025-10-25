@@ -1,4 +1,4 @@
-# PhotoEvents - Plataforma de Venda de Fotos de Eventos
+# Digital Art Studio - Plataforma de Venda de Fotos de Eventos
 
 Uma plataforma Laravel para fotógrafos e clientes partilharem e adquirirem fotografias de eventos.
 

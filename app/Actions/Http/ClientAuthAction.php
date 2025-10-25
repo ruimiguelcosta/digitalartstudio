@@ -11,4 +11,3 @@ class ClientAuthAction
         return view('client-auth');
     }
 }
-

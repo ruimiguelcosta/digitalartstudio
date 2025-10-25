@@ -11,4 +11,3 @@ class DashboardAction
         return view('dashboard');
     }
 }
-

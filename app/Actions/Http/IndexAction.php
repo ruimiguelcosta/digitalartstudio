@@ -11,4 +11,3 @@ class IndexAction
         return view('index');
     }
 }
-

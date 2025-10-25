@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Albums\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class AlbumsTable
@@ -46,6 +48,13 @@ class AlbumsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            ->emptyStateActions([
+                Action::make('create')
+                    ->label('Criar Primeiro Album')
+                    ->icon(Heroicon::Plus)
+                    ->button()
+                    ->color('primary'),
             ]);
     }
 }

@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'track.album.access' => \App\Http\Middleware\TrackAlbumAccess::class,
         ]);
+
+        $middleware->redirectGuestsTo(fn () => route('auth'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

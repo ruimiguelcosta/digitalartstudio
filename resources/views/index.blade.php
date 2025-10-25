@@ -9,7 +9,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                     </div>
-                    <h1 class="text-xl font-bold text-foreground">PhotoEvents</h1>
+                    <h1 class="text-xl font-bold text-foreground">Digital Art Studio</h1>
                 </div>
             </div>
         </header>

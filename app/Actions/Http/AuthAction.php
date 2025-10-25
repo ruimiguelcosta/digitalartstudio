@@ -11,4 +11,3 @@ class AuthAction
         return view('auth');
     }
 }
-

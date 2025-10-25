@@ -19,6 +19,8 @@ class StoreAlbumRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
+            'event_start_date' => ['nullable', 'date'],
+            'event_end_date' => ['nullable', 'date', 'after_or_equal:event_start_date'],
             'is_public' => ['boolean'],
         ];
     }
@@ -29,6 +31,9 @@ class StoreAlbumRequest extends FormRequest
             'title.required' => 'O título é obrigatório.',
             'title.max' => 'O título não pode ter mais de 255 caracteres.',
             'description.max' => 'A descrição não pode ter mais de 1000 caracteres.',
+            'event_start_date.date' => 'A data de início deve ser uma data válida.',
+            'event_end_date.date' => 'A data de fim deve ser uma data válida.',
+            'event_end_date.after_or_equal' => 'A data de fim deve ser igual ou posterior à data de início.',
         ];
     }
 }

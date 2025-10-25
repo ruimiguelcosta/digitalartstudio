@@ -215,9 +215,14 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
-                'maxProcesses' => 10,
+                'maxProcesses' => 50,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
+                'maxTime' => 0,
+                'maxJobs' => 0,
+                'memory' => 256,
+                'tries' => 3,
+                'timeout' => 300,
             ],
         ],
 

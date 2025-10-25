@@ -16,4 +16,11 @@ class EditAlbum extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\AlbumPhotoUploadWidget::class,
+        ];
+    }
 }

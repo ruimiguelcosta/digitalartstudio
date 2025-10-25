@@ -2,13 +2,15 @@
 
 namespace App\Actions\Http;
 
+use App\Models\Album;
 use Illuminate\View\View;
 
 class AlbumDetailAction
 {
     public function __invoke(string $id): View
     {
-        return view('album-detail', compact('id'));
+        $album = Album::query()->findOrFail($id);
+
+        return view('album-detail', compact('album'));
     }
 }
-

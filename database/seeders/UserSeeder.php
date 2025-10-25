@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\UserRole;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -13,23 +12,30 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::query()->create([
-            'name' => 'Administrador',
-            'email' => 'admin@photoevents.com',
-            'password' => Hash::make('password'),
+            'name' => 'Rui Costa',
+            'email' => 'rui.costa@inovador.net',
+            'password' => Hash::make('!PassWord@1234!5678'),
+            'role' => UserRole::ADMIN->value,
+        ]);
+
+        User::query()->create([
+            'name' => 'António Braga',
+            'email' => 'digitalartstudio.p2gmail.com',
+            'password' => Hash::make('!PassWord@1234!5678'),
             'role' => UserRole::ADMIN->value,
         ]);
 
         User::query()->create([
             'name' => 'Gestor',
-            'email' => 'manager@photoevents.com',
-            'password' => Hash::make('password'),
+            'email' => 'manager@digitalartstudio.com',
+            'password' => Hash::make('!PassWord@1234!5678'),
             'role' => UserRole::MANAGER->value,
         ]);
 
         User::query()->create([
             'name' => 'Utilizador',
-            'email' => 'user@photoevents.com',
-            'password' => Hash::make('password'),
+            'email' => 'user@digitalartstudio.com',
+            'password' => Hash::make('!PassWord@1234!5678'),
             'role' => UserRole::USER->value,
         ]);
     }
