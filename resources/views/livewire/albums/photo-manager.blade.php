@@ -24,6 +24,18 @@
             </div>
             
             <div class="flex items-center space-x-3">
+                @if(count($photos) > 0)
+                <button 
+                    wire:click="openSlideshow(0)"
+                    class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-all duration-200 inline-flex items-center justify-center"
+                >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Slideshow
+                </button>
+                @endif
+                
                 @if(!$album->is_public)
                 <button 
                     wire:click="publishAlbum"
@@ -79,11 +91,21 @@
                         class="w-full h-full object-cover"
                     />
                     
-                    <!-- Botão de eliminar sempre visível -->
-                    <div class="absolute" style="top: 10px; left: 10px;">
+                    <!-- Botões de ação sempre visíveis -->
+                    <div class="absolute top-2 left-2 flex flex-col space-y-2">
+                        <button 
+                            wire:click="openSlideshow({{ $loop->index }})"
+                            class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full transition-colors"
+                            title="Iniciar slideshow"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </button>
                         <button 
                             wire:click="confirmDelete('{{ $photo['id'] }}')"
                             class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
+                            title="Eliminar foto"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -394,11 +416,116 @@
             </div>
         </div>
     @endif
+
+    <!-- Slideshow Modal -->
+    @if($showSlideshow && count($photos) > 0)
+        <div class="fixed inset-0 z-50 bg-black bg-opacity-95 flex items-center justify-center">
+            <div class="relative w-full h-full flex flex-col">
+                <!-- Header com controles -->
+                <div class="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <h2 class="text-white text-lg font-semibold">{{ $album->title }}</h2>
+                            <span class="text-white/70 text-sm">
+                                {{ $currentSlideIndex + 1 }} / {{ count($photos) }}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <!-- Botão Play/Pause -->
+                            <button 
+                                wire:click="toggleSlideshowPlay"
+                                class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
+                                title="{{ $isSlideshowPlaying ? 'Pausar' : 'Reproduzir' }} slideshow"
+                            >
+                                @if($isSlideshowPlaying)
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                @else
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2z"></path>
+                                    </svg>
+                                @endif
+                            </button>
+                            
+                            <!-- Botão Fechar -->
+                            <button 
+                                wire:click="closeSlideshow"
+                                class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
+                                title="Fechar slideshow"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem principal -->
+                <div class="flex-1 flex items-center justify-center p-8">
+                    <div class="relative max-w-full max-h-full">
+                        <img 
+                            src="{{ Storage::disk('public')->url($photos[$currentSlideIndex]['path']) }}" 
+                            alt="{{ $photos[$currentSlideIndex]['original_filename'] ?? $photos[$currentSlideIndex]['filename'] ?? 'Photo' }}"
+                            class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                            style="max-height: calc(100vh - 200px);"
+                        />
+                        
+                        <!-- Botões de navegação lateral -->
+                        @if(count($photos) > 1)
+                            <button 
+                                wire:click="previousSlide"
+                                class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                                title="Foto anterior"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <button 
+                                wire:click="nextSlide"
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                                title="Próxima foto"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Miniaturas na parte inferior -->
+                @if(count($photos) > 1)
+                    <div class="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        <div class="flex justify-center space-x-2 overflow-x-auto pb-2">
+                            @foreach($photos as $index => $photo)
+                                <button 
+                                    wire:click="goToSlide({{ $index }})"
+                                    class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 {{ $index === $currentSlideIndex ? 'border-white' : 'border-white/30 hover:border-white/60' }}"
+                                >
+                                    <img 
+                                        src="{{ Storage::disk('public')->url($photo['path']) }}" 
+                                        alt="{{ $photo['original_filename'] ?? $photo['filename'] ?? 'Photo' }}"
+                                        class="w-full h-full object-cover"
+                                    />
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
 
 <script>
 document.addEventListener('livewire:init', function () {
     let refreshInterval;
+    let slideshowInterval;
     
     function startAutoRefresh() {
         refreshInterval = setInterval(() => {
@@ -413,12 +540,35 @@ document.addEventListener('livewire:init', function () {
         }
     }
     
+    function startSlideshow() {
+        slideshowInterval = setInterval(() => {
+            @this.call('nextSlide');
+        }, 3000); // Change slide every 3 seconds
+    }
+    
+    function stopSlideshow() {
+        if (slideshowInterval) {
+            clearInterval(slideshowInterval);
+            slideshowInterval = null;
+        }
+    }
+    
     // Start auto-refresh when component loads
     startAutoRefresh();
+    
+    // Listen for slideshow state changes
+    Livewire.on('slideshow-playing', () => {
+        startSlideshow();
+    });
+    
+    Livewire.on('slideshow-paused', () => {
+        stopSlideshow();
+    });
     
     // Stop auto-refresh when component is destroyed
     document.addEventListener('livewire:before-unload', function () {
         stopAutoRefresh();
+        stopSlideshow();
     });
     
     // Stop auto-refresh when user is interacting with modals
@@ -429,6 +579,30 @@ document.addEventListener('livewire:init', function () {
     // Resume auto-refresh when modals are closed
     document.addEventListener('livewire:modal:closed', function () {
         startAutoRefresh();
+    });
+    
+    // Keyboard navigation for slideshow
+    document.addEventListener('keydown', function(e) {
+        if (@this.showSlideshow) {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    @this.call('previousSlide');
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    @this.call('nextSlide');
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    @this.call('closeSlideshow');
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    @this.call('toggleSlideshowPlay');
+                    break;
+            }
+        }
     });
 });
 </script>

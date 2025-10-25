@@ -28,6 +28,12 @@ class PhotoManager extends Component
 
     public $photoToDelete = null;
 
+    public $showSlideshow = false;
+
+    public $currentSlideIndex = 0;
+
+    public $isSlideshowPlaying = false;
+
     protected function rules()
     {
         return [
@@ -218,12 +224,72 @@ class PhotoManager extends Component
         session()->flash('message', 'Álbum publicado com sucesso!');
     }
 
+    public function openSlideshow($startIndex = 0)
+    {
+        if (count($this->photos) === 0) {
+            return;
+        }
+
+        $this->currentSlideIndex = $startIndex;
+        $this->showSlideshow = true;
+        $this->isSlideshowPlaying = true;
+
+        $this->dispatch('slideshow-playing');
+    }
+
+    public function closeSlideshow()
+    {
+        $this->showSlideshow = false;
+        $this->isSlideshowPlaying = false;
+        $this->currentSlideIndex = 0;
+
+        $this->dispatch('slideshow-paused');
+    }
+
+    public function nextSlide()
+    {
+        if (count($this->photos) === 0) {
+            return;
+        }
+
+        $this->currentSlideIndex = ($this->currentSlideIndex + 1) % count($this->photos);
+    }
+
+    public function previousSlide()
+    {
+        if (count($this->photos) === 0) {
+            return;
+        }
+
+        $this->currentSlideIndex = $this->currentSlideIndex === 0
+            ? count($this->photos) - 1
+            : $this->currentSlideIndex - 1;
+    }
+
+    public function goToSlide($index)
+    {
+        if ($index >= 0 && $index < count($this->photos)) {
+            $this->currentSlideIndex = $index;
+        }
+    }
+
+    public function toggleSlideshowPlay()
+    {
+        $this->isSlideshowPlaying = ! $this->isSlideshowPlaying;
+
+        if ($this->isSlideshowPlaying) {
+            $this->dispatch('slideshow-playing');
+        } else {
+            $this->dispatch('slideshow-paused');
+        }
+    }
+
     public function render()
     {
         $accesses = collect();
 
         // Only show accesses for admins
-        if (Auth::user()->is_admin) {
+        if (Auth::user()->isAdmin()) {
             $accesses = AlbumAccess::where('album_id', $this->album->id)
                 ->with('user')
                 ->latest('accessed_at')
