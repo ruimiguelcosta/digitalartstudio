@@ -17,6 +17,7 @@ use App\Actions\Http\Photos\DeletePhotoAction;
 use App\Actions\Http\Photos\StoreMultiplePhotosAction;
 use App\Actions\Http\Photos\StorePhotoAction;
 use App\Actions\Http\Photos\UpdatePhotoAction;
+use App\Actions\Http\Services\ServiceManagerAction;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', IndexAction::class)->name('index');
@@ -29,6 +30,7 @@ Route::post('/api/auth/logout', LogoutAction::class)->name('auth.logout');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', DashboardAction::class)->name('dashboard');
+    Route::get('/services', ServiceManagerAction::class)->name('services.manager');
     Route::get('/album/{id}', AlbumDetailAction::class)->name('album.detail')->middleware('track.album.access');
 
     Route::prefix('api/albums')->group(function () {

@@ -15,7 +15,7 @@
             <div class="card-elevated rounded-lg">
                 <div class="p-6">
                     <div class="mb-6">
-                        <h2 class="text-2xl font-semibold">Área do Fotógrafo</h2>
+                        <h2 class="text-2xl font-semibold">Entrar</h2>
                         <p class="text-muted-foreground">Entre com as suas credenciais para continuar</p>
                     </div>
                     

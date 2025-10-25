@@ -35,6 +35,11 @@
                             <a href="/dashboard" class="text-foreground hover:text-primary transition-colors duration-200 font-medium">
                                 Dashboard
                             </a>
+                            @if(auth()->user()->isAdmin())
+                                <a href="/services" class="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                                    Serviços
+                                </a>
+                            @endif
                         @else
                             <a href="/auth" class="text-foreground hover:text-primary transition-colors duration-200 font-medium">
                                 Login
@@ -78,6 +83,11 @@
                             <a href="/dashboard" class="text-sm text-muted-foreground hover:text-primary transition-colors duration-200">
                                 Dashboard
                             </a>
+                            @if(auth()->user()->isAdmin())
+                                <a href="/services" class="text-sm text-muted-foreground hover:text-primary transition-colors duration-200">
+                                    Serviços
+                                </a>
+                            @endif
                         @else
                             <a href="/auth" class="text-sm text-muted-foreground hover:text-primary transition-colors duration-200">
                                 Login
