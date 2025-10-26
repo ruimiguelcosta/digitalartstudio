@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/Users/ruicosta/Library/Application Support/Herd/bin/php84",
+            "args": [
+                "/private/var/www/digitalartstudio/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
