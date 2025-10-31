@@ -96,13 +96,9 @@ class PhotosRelationManager extends RelationManager
                             ->maxSize($maxSizeMB * 1024)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                             ->helperText("Aceita imagens em formato JPEG, PNG ou WebP (máx. {$maxSizeMB}MB)")
-                            ->rules([
-                                'required',
-                                'file',
-                                'max:'.($maxSizeMB * 1024 * 1024),
-                            ])
-                            ->validationAttribute('Fotografia')
+                            ->validationAttribute('Fotografias')
                             ->required()
+                            ->multiple()
                             ->columnSpanFull(),
                         TextInput::make('original_filename')
                             ->label('Nome do Ficheiro Original')
@@ -116,31 +112,36 @@ class PhotosRelationManager extends RelationManager
                         $photoCount = \App\Models\Photo::query()->where('album_id', $album->id)->count();
                         $maxCount = config('photos.max_count');
 
-                        if ($photoCount >= $maxCount) {
-                            throw new \Exception("Limite máximo de {$maxCount} fotos por álbum atingido.");
+                        $paths = is_array($data['path']) ? $data['path'] : [$data['path']];
+                        $photosToAdd = count($paths);
+
+                        if ($photoCount + $photosToAdd > $maxCount) {
+                            throw new \Exception("Limite máximo de {$maxCount} fotos por álbum atingido. Tentou adicionar {$photosToAdd} fotos, mas só pode adicionar mais ".($maxCount - $photoCount).' fotos.');
                         }
 
-                        $nextNumber = $photoCount + 1;
                         $initials = $album->getInitials();
-                        $reference = $initials.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
+                        $nextNumber = $photoCount + 1;
 
-                        $path = $data['path'];
-                        $extension = pathinfo($path, PATHINFO_EXTENSION);
+                        foreach ($paths as $path) {
+                            $extension = pathinfo($path, PATHINFO_EXTENSION);
+                            $originalSize = \Illuminate\Support\Facades\Storage::disk('local')->size($path);
 
-                        $originalSize = \Illuminate\Support\Facades\Storage::disk('local')->size($path);
-
-                        $newFilename = $album->slug.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT).'.'.$extension;
-                        $newPath = "photos/{$album->slug}/{$newFilename}";
+                            $reference = $initials.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
+                            $newFilename = $album->slug.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT).'.'.$extension;
+                            $newPath = "photos/{$album->slug}/{$newFilename}";
 
                             \Illuminate\Support\Facades\Storage::disk('local')->move($path, $newPath);
 
-                        \App\Models\Photo::query()->create([
-                            'album_id' => $album->id,
-                            'reference' => $reference,
-                            'path' => $newPath,
-                            'original_filename' => $newFilename,
-                            'size' => $originalSize,
-                        ]);
+                            \App\Models\Photo::query()->create([
+                                'album_id' => $album->id,
+                                'reference' => $reference,
+                                'path' => $newPath,
+                                'original_filename' => $newFilename,
+                                'size' => $originalSize,
+                            ]);
+
+                            $nextNumber++;
+                        }
                     }),
             ])
             ->actions([
