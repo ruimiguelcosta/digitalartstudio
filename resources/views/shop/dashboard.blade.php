@@ -5,7 +5,7 @@
     <header class="border-b border-border">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="font-serif text-2xl font-bold text-foreground">
-                Os Meus Álbuns
+                {{ $album->name }}
             </h1>
             <div class="flex gap-3 items-center">
                 <a href="{{ route('shop.checkout') }}">
@@ -37,7 +37,7 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-12">
+    <main class="max-w-4xl mx-auto px-4 py-12">
         @if($album->photos->isEmpty())
             <div class="text-center py-12">
                 <p class="text-muted-foreground text-lg">
@@ -45,32 +45,32 @@
                 </p>
             </div>
         @else
+            @php
+                $firstPhoto = $album->photos->first();
+            @endphp
             <div class="mb-8">
                 <h2 class="font-serif text-3xl font-bold mb-2 text-foreground">{{ $album->name }}</h2>
                 @if($album->description)
-                    <p class="text-muted-foreground">{{ $album->description }}</p>
+                    <p class="text-muted-foreground mb-6">{{ $album->description }}</p>
                 @endif
             </div>
 
-            <div class="mb-6">
+            @if($firstPhoto)
+                <div class="mb-6">
+                    <div class="relative aspect-[16/10] overflow-hidden rounded-lg">
+                        <img 
+                            src="{{ \Illuminate\Support\Facades\URL::signedRoute('album.photo', ['path' => base64_encode($firstPhoto->path)]) }}" 
+                            alt="{{ $album->name }}"
+                            class="w-full h-full object-cover"
+                        />
+                    </div>
+                </div>
+            @endif
+
+            <div class="text-center">
                 <a href="{{ route('shop.album', ['album' => $album->id]) }}" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-3">
                     Ver Álbum Completo
                 </a>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                @foreach($album->photos->take(8) as $photo)
-                    <a href="{{ route('shop.album', ['album' => $album->id]) }}" class="relative aspect-square overflow-hidden rounded-lg group">
-                        <img 
-                            src="{{ \Illuminate\Support\Facades\URL::signedRoute('album.photo', ['path' => base64_encode($photo->path)]) }}" 
-                            alt="Foto"
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span class="text-white font-semibold">Ver Álbum</span>
-                        </div>
-                    </a>
-                @endforeach
             </div>
         @endif
     </main>

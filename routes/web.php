@@ -48,10 +48,17 @@ Route::get('/shop/album/{album}', function (string $album) {
         return redirect()->route('shop.dashboard')->with('error', 'Acesso negado a este álbum.');
     }
 
-    $albumModel = \App\Models\Album::query()->with('photos')->findOrFail($album);
+    $albumModel = \App\Models\Album::query()->findOrFail($album);
+    $photos = $albumModel->photos()->paginate(150);
     $cart = session('shop_cart', []);
+    $services = \App\Models\Service::query()->orderBy('price')->get();
 
-    return view('shop.album', ['album' => $albumModel, 'cart' => $cart]);
+    return view('shop.album', [
+        'album' => $albumModel,
+        'photos' => $photos,
+        'cart' => $cart,
+        'services' => $services,
+    ]);
 })->name('shop.album');
 
 Route::post('/shop/cart/add', \App\Actions\Http\Shop\AddToCartAction::class)->name('shop.cart.add');

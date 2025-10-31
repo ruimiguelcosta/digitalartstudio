@@ -33,10 +33,24 @@
 
     <div class="max-w-6xl mx-auto px-4 py-12">
         <h1 class="font-serif text-4xl md:text-5xl font-bold mb-4 text-foreground">{{ $album->name }}</h1>
+        
         @if($album->description)
-            <p class="text-lg text-muted-foreground mb-8">{{ $album->description }}</p>
+            <p class="text-lg text-muted-foreground mb-6">{{ $album->description }}</p>
         @endif
-        <p class="text-sm text-muted-foreground mb-8">Preço por foto: €10,00</p>
+
+        @if($services->isNotEmpty())
+            <div class="mb-8">
+                <h2 class="text-xl font-serif font-bold mb-4 text-foreground">Preços</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($services as $service)
+                        <div class="bg-card border border-border rounded-lg p-4">
+                            <h3 class="font-semibold text-foreground mb-1">{{ $service->name }}</h3>
+                            <p class="text-lg font-bold text-primary">€{{ number_format($service->price, 2, ',', '.') }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         @if(session('success'))
             <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
@@ -50,31 +64,32 @@
             </div>
         @endif
 
-        @if($album->photos->isEmpty())
+        @if($photos->isEmpty())
             <div class="text-center py-12">
                 <p class="text-muted-foreground">Este álbum ainda não possui fotografias.</p>
             </div>
         @else
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-                @foreach($album->photos as $index => $photo)
+                @foreach($photos as $photo)
                     @php
                         $isInCart = collect($cart)->contains('photo_id', $photo->id);
                         $photoUrl = \Illuminate\Support\Facades\URL::signedRoute('album.photo', ['path' => base64_encode($photo->path)]);
+                        $photoNumber = ($photos->currentPage() - 1) * $photos->perPage() + $loop->iteration;
                     @endphp
                     <div class="relative">
                         <div class="relative aspect-square overflow-hidden rounded-lg mb-2">
                             <img
                                 src="{{ $photoUrl }}"
-                                alt="Foto {{ $index + 1 }}"
+                                alt="Foto {{ $photoNumber }}"
                                 class="w-full h-full object-cover"
                             />
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-muted-foreground text-sm">Foto {{ $index + 1 }}</span>
+                            <span class="text-muted-foreground text-sm">Foto {{ $photoNumber }}</span>
                             <form action="{{ $isInCart ? route('shop.cart.remove') : route('shop.cart.add') }}" method="POST" class="inline">
                                 @csrf
                                 <input type="hidden" name="photo_id" value="{{ $photo->id }}">
-                                <input type="hidden" name="photo_index" value="{{ $index }}">
+                                <input type="hidden" name="photo_index" value="{{ $photoNumber - 1 }}">
                                 <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 {{ $isInCart ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground' }} px-3 py-1.5 text-xs">
                                     @if($isInCart)
                                         <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +107,10 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            <div class="mt-6">
+                {{ $photos->links() }}
             </div>
 
             @php
