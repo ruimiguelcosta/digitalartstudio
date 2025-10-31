@@ -64,7 +64,7 @@ class ProcessCheckoutAction
         Session::forget('shop_cart');
 
         return redirect()->route('shop.dashboard')
-            ->with('success', 'Encomenda enviada! Receberá um email com os detalhes de pagamento.');
+            ->with('success', 'Obrigado pela sua encomenda. Será contactado em breve para ajustar detalhes.');
     }
 }
 
