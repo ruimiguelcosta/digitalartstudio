@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Album;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -109,5 +111,120 @@ class AlbumsTest extends TestCase
         $this->postJson('/api/albums', $payload)
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['end_date']);
+    }
+
+    public function test_manager_pode_definir_pin_para_album_que_gerencia(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create(['manager_id' => $managerUser->id]);
+
+        $payload = ['pin' => 'ABC12345'];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertOk()
+            ->assertJsonPath('pin', 'ABC12345');
+
+        $this->assertEquals('ABC12345', $album->refresh()->pin);
+    }
+
+    public function test_manager_pode_remover_pin_definindo_null(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create([
+            'manager_id' => $managerUser->id,
+            'pin' => 'OLD12345',
+        ]);
+
+        $payload = ['pin' => null];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertOk()
+            ->assertJsonPath('pin', null);
+
+        $this->assertNull($album->refresh()->pin);
+    }
+
+    public function test_manager_nao_pode_definir_pin_para_album_que_nao_gerencia(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $otherManager = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create(['manager_id' => $otherManager->id]);
+
+        $payload = ['pin' => 'ABC12345'];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertForbidden();
+    }
+
+    public function test_usuario_sem_role_manager_nao_pode_definir_pin(): void
+    {
+        $user = User::factory()->create();
+        $album = Album::factory()->create(['manager_id' => $user->id]);
+
+        $payload = ['pin' => 'ABC12345'];
+
+        $this->actingAs($user)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertForbidden();
+    }
+
+    public function test_valida_que_pin_deve_ter_exatamente_8_caracteres(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create(['manager_id' => $managerUser->id]);
+
+        $payload = ['pin' => 'ABC123'];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['pin']);
+    }
+
+    public function test_valida_que_pin_deve_conter_apenas_letras_e_numeros(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create(['manager_id' => $managerUser->id]);
+
+        $payload = ['pin' => 'ABC-1234'];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['pin']);
+    }
+
+    public function test_pin_pode_conter_letras_minusculas_e_maiusculas(): void
+    {
+        $managerRole = Role::query()->firstOrCreate(['slug' => 'manager'], ['name' => 'Manager']);
+        $managerUser = User::factory()->create();
+        $managerUser->roles()->attach($managerRole);
+
+        $album = Album::factory()->create(['manager_id' => $managerUser->id]);
+
+        $payload = ['pin' => 'AbC12345'];
+
+        $this->actingAs($managerUser)
+            ->patchJson("/api/albums/{$album->id}/pin", $payload)
+            ->assertOk()
+            ->assertJsonPath('pin', 'AbC12345');
     }
 }

@@ -26,6 +26,7 @@ class Album extends Model
         'status',
         'manager_email',
         'manager_id',
+        'pin',
     ];
 
     protected function casts(): array

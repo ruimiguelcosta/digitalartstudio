@@ -16,6 +16,19 @@ class AlbumObserver
         if (empty($album->slug)) {
             $album->slug = $this->generateSlug($album->name);
         }
+
+        if (empty($album->pin)) {
+            $album->pin = $this->generatePin();
+        }
+    }
+
+    public function updating(Album $album): void
+    {
+        $originalPin = $album->getOriginal('pin');
+
+        if (empty($originalPin)) {
+            $album->pin = $this->generatePin();
+        }
     }
 
     public function updated(Album $album): void
@@ -86,6 +99,11 @@ class AlbumObserver
         }
 
         return $uniqueSlug;
+    }
+
+    private function generatePin(): string
+    {
+        return Str::random(12);
     }
 
     public function deleted(Album $album): void

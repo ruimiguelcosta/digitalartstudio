@@ -64,6 +64,13 @@ class AlbumForm
                                     ->required(fn ($get) => $get('status') === AlbumStatus::Private->value)
                                     ->visible(fn ($get) => $get('status') === AlbumStatus::Private->value)
                                     ->columnSpanFull(),
+
+                                TextInput::make('pin')
+                                    ->label('PIN')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->helperText('O PIN é gerado automaticamente quando o álbum é criado.')
+                                    ->columnSpanFull(),
                             ]),
                     ]),
             ]);

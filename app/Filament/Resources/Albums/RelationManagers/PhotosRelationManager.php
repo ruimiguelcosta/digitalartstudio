@@ -62,11 +62,13 @@ class PhotosRelationManager extends RelationManager
 
         return $table
             ->recordTitleAttribute('original_filename')
+            ->defaultSort('created_at', 'desc')
             ->columns([
-                ImageColumn::make('path')
+                ImageColumn::make('url')
                     ->label('Imagem')
                     ->square()
                     ->size(80)
+                    ->defaultImageUrl(url('/images/placeholder.jpg'))
                     ->action(
                         fn ($record, $livewire) => $livewire->mountTableAction('viewGallery', $record->id)
                     )

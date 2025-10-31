@@ -27,4 +27,13 @@ class Photo extends Model
     {
         return $this->belongsTo(Album::class);
     }
+
+    public function getUrlAttribute(): ?string
+    {
+        if (! $this->path) {
+            return null;
+        }
+
+        return route('filament.admin.storage.photo', ['path' => base64_encode($this->path)]);
+    }
 }

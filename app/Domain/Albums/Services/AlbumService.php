@@ -42,4 +42,14 @@ class AlbumService
     {
         return Album::query()->with('photos')->find($id);
     }
+
+    public function updatePin(Album $album, ?string $pin): Album
+    {
+        return DB::transaction(function () use ($album, $pin) {
+            $album->pin = $pin;
+            $album->save();
+
+            return $album->fresh();
+        });
+    }
 }
