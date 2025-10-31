@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="min-h-screen bg-background">
+    @include('partials.navigation')
     @include('partials.hero')
     @include('partials.about')
     @include('partials.services')

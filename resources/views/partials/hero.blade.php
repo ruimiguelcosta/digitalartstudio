@@ -1,4 +1,4 @@
-<section class="relative h-screen flex items-center justify-center overflow-hidden">
+<section class="relative h-screen flex items-center justify-center overflow-hidden pt-16">
     <div 
         class="absolute inset-0 bg-cover bg-center"
         style="background-image: url('{{ asset('assets/hero-photography.jpg') }}'); filter: brightness(0.4);"
@@ -20,7 +20,10 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
             </button>
-            @if(session('album_access'))
+            @php
+                $hasAlbumAccess = session('album_access') && !request()->is('shop*');
+            @endphp
+            @if($hasAlbumAccess)
                 <a 
                     href="{{ route('dashboard') }}"
                     class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-lg font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-8 py-6"

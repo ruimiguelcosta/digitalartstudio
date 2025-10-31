@@ -48,6 +48,11 @@ class Album extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public function guestLogins(): HasMany
+    {
+        return $this->hasMany(AlbumGuestLogin::class);
+    }
+
     public function firstPhoto(): ?Photo
     {
         return $this->photos()->first();

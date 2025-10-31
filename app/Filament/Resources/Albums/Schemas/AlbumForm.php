@@ -69,8 +69,14 @@ class AlbumForm
                                     ->label('PIN')
                                     ->disabled()
                                     ->dehydrated(false)
-                                    ->helperText('O PIN é gerado automaticamente quando o álbum é criado.')
-                                    ->columnSpanFull(),
+                                    ->helperText('O PIN é gerado automaticamente quando o álbum é criado.'),
+
+                                TextInput::make('album_url')
+                                    ->label('URL do Álbum')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->default(fn ($record) => $record ? url("/shop/albums/{$record->id}") : null)
+                                    ->helperText('Compartilhe este link juntamente com o PIN para acesso ao álbum.'),
                             ]),
                     ]),
             ]);
