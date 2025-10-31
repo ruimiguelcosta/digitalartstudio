@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Gallery extends Model
 {
@@ -25,5 +26,36 @@ class Gallery extends Model
             'active' => 'boolean',
             'order' => 'integer',
         ];
+    }
+
+    public function getCoverPhotoUrlAttribute(): ?string
+    {
+        if (! $this->cover_photo) {
+            return null;
+        }
+
+        $path = $this->cover_photo;
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (str_starts_with($path, '/')) {
+            $path = ltrim($path, '/');
+        }
+
+        if (! str_starts_with($path, 'galleries/')) {
+            $path = 'galleries/'.$path;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->url($path);
+        }
+
+        if (Storage::disk('public')->exists($this->cover_photo)) {
+            return Storage::disk('public')->url($this->cover_photo);
+        }
+
+        return Storage::disk('public')->url($path);
     }
 }
