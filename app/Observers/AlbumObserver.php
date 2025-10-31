@@ -106,9 +106,21 @@ class AlbumObserver
         return Str::random(12);
     }
 
+    public function deleting(Album $album): void
+    {
+        $album->loadMissing('photos');
+
+        foreach ($album->photos as $photo) {
+            $photo->delete();
+        }
+    }
+
     public function deleted(Album $album): void
     {
-        //
+        $directory = "photos/{$album->slug}";
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($directory)) {
+            \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory($directory);
+        }
     }
 
     public function restored(Album $album): void

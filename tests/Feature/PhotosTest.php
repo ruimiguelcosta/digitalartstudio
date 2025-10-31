@@ -189,4 +189,107 @@ class PhotosTest extends TestCase
                 'message' => "Limite máximo de {$maxCount} fotos por álbum atingido.",
             ]);
     }
+
+    public function test_carrega_mais_fotos_para_a_galeria(): void
+    {
+        $album = Album::factory()->create();
+        
+        $photos = Photo::factory()->count(30)->for($album)->create();
+        
+        $payload = [
+            'album_id' => $album->id,
+            'offset' => 0,
+        ];
+        
+        $response = $this->postJson('/api/photos/load-more', $payload)
+            ->assertOk()
+            ->assertJsonStructure([
+                'photos' => [
+                    '*' => ['id', 'path', 'url', 'original_filename', 'reference'],
+                ],
+                'has_more',
+            ]);
+        
+        $photosData = $response->json('photos');
+        $this->assertCount(25, $photosData);
+        $this->assertTrue($response->json('has_more'));
+    }
+
+    public function test_retorna_has_more_false_quando_nao_ha_mais_fotos(): void
+    {
+        $album = Album::factory()->create();
+        
+        $photos = Photo::factory()->count(10)->for($album)->create();
+        
+        $payload = [
+            'album_id' => $album->id,
+            'offset' => 0,
+        ];
+        
+        $response = $this->postJson('/api/photos/load-more', $payload)
+            ->assertOk();
+        
+        $this->assertCount(10, $response->json('photos'));
+        $this->assertFalse($response->json('has_more'));
+    }
+
+    public function test_carrega_fotos_corretas_do_offset_especificado(): void
+    {
+        $album = Album::factory()->create();
+        
+        $photos = Photo::factory()->count(30)->for($album)->create();
+        
+        $firstBatch = $this->postJson('/api/photos/load-more', [
+            'album_id' => $album->id,
+            'offset' => 0,
+        ])->assertOk();
+        
+        $secondBatch = $this->postJson('/api/photos/load-more', [
+            'album_id' => $album->id,
+            'offset' => 25,
+        ])->assertOk();
+        
+        $firstPhotoIds = collect($firstBatch->json('photos'))->pluck('id')->toArray();
+        $secondPhotoIds = collect($secondBatch->json('photos'))->pluck('id')->toArray();
+        
+        $this->assertEmpty(array_intersect($firstPhotoIds, $secondPhotoIds));
+    }
+
+    public function test_valida_album_id_obrigatorio_em_load_more(): void
+    {
+        $payload = [
+            'offset' => 0,
+        ];
+        
+        $this->postJson('/api/photos/load-more', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['album_id']);
+    }
+
+    public function test_valida_offset_obrigatorio_em_load_more(): void
+    {
+        $album = Album::factory()->create();
+        
+        $payload = [
+            'album_id' => $album->id,
+        ];
+        
+        $this->postJson('/api/photos/load-more', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['offset']);
+    }
+
+    public function test_valida_offset_deve_ser_inteiro_positivo(): void
+    {
+        $album = Album::factory()->create();
+        
+        $payload = [
+            'album_id' => $album->id,
+            'offset' => -1,
+        ];
+        
+        $this->postJson('/api/photos/load-more', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['offset']);
+    }
 }

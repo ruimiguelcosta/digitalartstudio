@@ -14,42 +14,64 @@ class PhotoService
     {
         return DB::transaction(function () use ($data) {
             $album = Album::query()->findOrFail($data->album_id);
-            
+
             $photoCount = Photo::query()->where('album_id', $album->id)->count();
             $maxCount = config('photos.max_count');
-            
+
             if ($photoCount >= $maxCount) {
                 throw new \Exception("Limite máximo de {$maxCount} fotos por álbum atingido.");
             }
-            
+
             $nextNumber = $photoCount + 1;
             $initials = $album->getInitials();
             $reference = $initials.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
-            
-            $extension = pathinfo($data->path, PATHINFO_EXTENSION);
+
             $originalSize = \Illuminate\Support\Facades\Storage::disk('local')->size($data->path);
-            
-            $newFilename = $album->slug.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT).'.'.$extension;
-            $newPath = "photos/{$album->slug}/{$newFilename}";
-            
+
+            $originalFilename = $data->original_filename;
+            $directory = "photos/{$album->slug}";
+            $finalFilename = $this->ensureUniqueFilename($directory, $originalFilename);
+            $newPath = "{$directory}/{$finalFilename}";
+
             \Illuminate\Support\Facades\Storage::disk('local')->move($data->path, $newPath);
 
             return Photo::query()->create([
                 'album_id' => $album->id,
                 'reference' => $reference,
                 'path' => $newPath,
-                'original_filename' => $newFilename,
+                'original_filename' => $originalFilename,
                 'size' => $originalSize,
             ]);
         });
+    }
+
+    private function ensureUniqueFilename(string $directory, string $filename): string
+    {
+        $storage = \Illuminate\Support\Facades\Storage::disk('local');
+        $baseName = pathinfo($filename, PATHINFO_FILENAME);
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $fullPath = "{$directory}/{$filename}";
+
+        if (! $storage->exists($fullPath)) {
+            return $filename;
+        }
+
+        $counter = 1;
+        do {
+            $newFilename = "{$baseName}_{$counter}.{$extension}";
+            $fullPath = "{$directory}/{$newFilename}";
+            $counter++;
+        } while ($storage->exists($fullPath));
+
+        return $newFilename;
     }
 
     public function update(Photo $photo, PhotoData $data): Photo
     {
         return DB::transaction(function () use ($photo, $data) {
             $updateData = array_filter($data->toArray(), fn ($value) => $value !== null);
-            
-            if (!empty($updateData)) {
+
+            if (! empty($updateData)) {
                 $photo->fill($updateData);
                 $photo->save();
             }
