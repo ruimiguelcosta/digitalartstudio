@@ -20,14 +20,14 @@ class AlbumObserver
 
     public function updated(Album $album): void
     {
-        if ($album->wasChanged('status') && $album->status === AlbumStatus::Published && ! empty($album->manager_email)) {
+        if ($album->wasChanged('status') && $album->status === AlbumStatus::Private && ! empty($album->manager_email)) {
             $this->createManagerAndSendEmail($album);
         }
     }
 
     public function created(Album $album): void
     {
-        if ($album->status === AlbumStatus::Published && ! empty($album->manager_email)) {
+        if ($album->status === AlbumStatus::Private && ! empty($album->manager_email)) {
             $this->createManagerAndSendEmail($album);
         }
     }

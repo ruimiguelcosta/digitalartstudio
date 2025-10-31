@@ -39,7 +39,11 @@ class AlbumsTable
                                     TextColumn::make('status')
                                         ->badge()
                                         ->formatStateUsing(fn ($state) => $state->label())
-                                        ->color(fn ($state) => $state === \App\AlbumStatus::Published ? 'success' : 'gray')
+                                        ->color(fn ($state) => match ($state) {
+                                            \App\AlbumStatus::Published => 'success',
+                                            \App\AlbumStatus::Private => 'info',
+                                            \App\AlbumStatus::Draft => 'gray',
+                                        })
                                         ->size('sm')
                                         ->grow(false),
                                 ]),

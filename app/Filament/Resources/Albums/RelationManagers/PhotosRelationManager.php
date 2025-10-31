@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Albums\RelationManagers;
 
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -64,7 +66,13 @@ class PhotosRelationManager extends RelationManager
                 ImageColumn::make('path')
                     ->label('Imagem')
                     ->square()
-                    ->size(80),
+                    ->size(80)
+                    ->action(
+                        fn ($record, $livewire) => $livewire->mountTableAction('viewGallery', $record->id)
+                    )
+                    ->extraAttributes(fn () => [
+                        'class' => 'cursor-pointer hover:opacity-80 transition',
+                    ]),
                 TextColumn::make('reference')
                     ->label('Referência')
                     ->searchable()
@@ -146,6 +154,48 @@ class PhotosRelationManager extends RelationManager
                     }),
             ])
             ->actions([
+                Action::make('viewGallery')
+                    ->label('Visualizar')
+                    ->icon(Heroicon::Eye)
+                    ->color('info')
+                    ->modalHeading('Galeria de Fotos')
+                    ->modalWidth('7xl')
+                    ->modalContent(function ($record, $livewire) {
+                        $album = $livewire->ownerRecord;
+                        $photos = \App\Models\Photo::query()
+                            ->where('album_id', $album->id)
+                            ->orderBy('created_at')
+                            ->get()
+                            ->map(function ($photo) {
+                                $encodedPath = base64_encode($photo->path);
+                                $url = route('filament.admin.storage.photo', ['path' => $encodedPath]);
+
+                                return [
+                                    'id' => $photo->id,
+                                    'path' => $photo->path,
+                                    'url' => $url,
+                                    'original_filename' => $photo->original_filename,
+                                    'reference' => $photo->reference,
+                                ];
+                            })
+                            ->toArray();
+
+                        $currentIndex = 0;
+                        foreach ($photos as $index => $photo) {
+                            if ($photo['id'] === $record->id) {
+                                $currentIndex = $index;
+                                break;
+                            }
+                        }
+
+                        return view('filament.albums.photo-gallery', [
+                            'photos' => $photos,
+                            'currentIndex' => $currentIndex,
+                            'modalId' => 'viewGallery',
+                        ]);
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Fechar'),
                 EditAction::make()
                     ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists())
                     ->form([

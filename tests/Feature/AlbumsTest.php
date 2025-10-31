@@ -17,7 +17,7 @@ class AlbumsTest extends TestCase
             'description' => 'Fotos do casamento',
             'start_date' => '2024-06-01',
             'end_date' => '2024-06-05',
-            'status' => 'published',
+            'status' => 'private',
         ];
 
         $response = $this->postJson('/api/albums', $payload)
@@ -65,7 +65,7 @@ class AlbumsTest extends TestCase
             'description' => $album->description,
             'start_date' => '2024-01-01',
             'end_date' => '2024-01-31',
-            'status' => 'published',
+            'status' => 'private',
         ];
 
         $this->patchJson("/api/albums/{$album->id}", $payload)

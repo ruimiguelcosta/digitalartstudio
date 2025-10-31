@@ -17,7 +17,7 @@ class AlbumManagerEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Gestor do Álbum - digitalartstudio.pt',
+            subject: 'Digital Art Studio',
         );
     }
 

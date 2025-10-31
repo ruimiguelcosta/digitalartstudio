@@ -46,13 +46,14 @@ class AlbumForm
                                     ->label('Estado')
                                     ->options([
                                         AlbumStatus::Draft->value => AlbumStatus::Draft->label(),
+                                        AlbumStatus::Private->value => AlbumStatus::Private->label(),
                                         AlbumStatus::Published->value => AlbumStatus::Published->label(),
                                     ])
                                     ->default(AlbumStatus::Draft->value)
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set) {
-                                        if ($state !== AlbumStatus::Published->value) {
+                                        if ($state !== AlbumStatus::Private->value) {
                                             $set('manager_email', null);
                                         }
                                     }),
@@ -60,8 +61,8 @@ class AlbumForm
                                 TextInput::make('manager_email')
                                     ->label('Email do Manager')
                                     ->email()
-                                    ->required(fn ($get) => $get('status') === AlbumStatus::Published->value)
-                                    ->visible(fn ($get) => $get('status') === AlbumStatus::Published->value)
+                                    ->required(fn ($get) => $get('status') === AlbumStatus::Private->value)
+                                    ->visible(fn ($get) => $get('status') === AlbumStatus::Private->value)
                                     ->columnSpanFull(),
                             ]),
                     ]),
