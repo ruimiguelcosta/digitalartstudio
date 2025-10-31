@@ -28,7 +28,7 @@
                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             />
-                            <div class="w-full h-full bg-foreground/10 items-center justify-center" style="display: none;">
+                            <div class="w-full h-full bg-foreground/10 flex items-center justify-center" style="display: none;">
                                 <span class="text-foreground/40">Erro ao carregar imagem</span>
                             </div>
                         @else

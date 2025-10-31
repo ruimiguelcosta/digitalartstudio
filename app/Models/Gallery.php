@@ -40,22 +40,22 @@ class Gallery extends Model
             return $path;
         }
 
-        if (str_starts_with($path, '/')) {
-            $path = ltrim($path, '/');
+        $path = ltrim($path, '/');
+
+        $possiblePaths = [
+            $path,
+            'galleries/'.$path,
+            str_replace('galleries/', '', $path),
+        ];
+
+        foreach ($possiblePaths as $testPath) {
+            if (Storage::disk('public')->exists($testPath)) {
+                return asset('storage/'.$testPath);
+            }
         }
 
-        if (! str_starts_with($path, 'galleries/')) {
-            $path = 'galleries/'.$path;
-        }
+        $urlPath = str_starts_with($path, 'galleries/') ? $path : 'galleries/'.$path;
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
-        }
-
-        if (Storage::disk('public')->exists($this->cover_photo)) {
-            return Storage::disk('public')->url($this->cover_photo);
-        }
-
-        return Storage::disk('public')->url($path);
+        return asset('storage/'.$urlPath);
     }
 }
