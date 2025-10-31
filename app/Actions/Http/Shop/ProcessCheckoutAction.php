@@ -3,7 +3,10 @@
 namespace App\Actions\Http\Shop;
 
 use App\Http\Requests\Shop\CheckoutRequest;
+use App\Jobs\SendOrderEmailsJob;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 class ProcessCheckoutAction
@@ -30,6 +33,33 @@ class ProcessCheckoutAction
         $totalPrice = collect($cart)->sum(function ($item) {
             return $item['service_price'] ?? 0;
         });
+
+        $albumId = session('shop_album_id');
+        $userEmail = session('shop_user_email');
+
+        $order = DB::transaction(function () use ($validated, $userEmail, $albumId, $totalPrice, $cart) {
+            $order = Order::query()->create([
+                'customer_name' => $validated['name'],
+                'customer_email' => $userEmail,
+                'customer_phone' => $validated['phone'],
+                'album_id' => $albumId,
+                'total_price' => $totalPrice,
+            ]);
+
+            foreach ($cart as $item) {
+                $order->items()->create([
+                    'photo_id' => $item['photo_id'],
+                    'service_id' => $item['service_id'],
+                    'service_name' => $item['service_name'] ?? 'Serviço',
+                    'service_price' => $item['service_price'],
+                    'photo_index' => $item['photo_index'] ?? null,
+                ]);
+            }
+
+            return $order;
+        });
+
+        SendOrderEmailsJob::dispatch($order);
 
         Session::forget('shop_cart');
 

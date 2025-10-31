@@ -165,11 +165,11 @@ class PhotosRelationManager extends RelationManager
                     ->modalContent(function ($record, $livewire) {
                         $album = $livewire->ownerRecord;
                         $limit = 25;
-                        
+
                         $totalPhotos = \App\Models\Photo::query()
                             ->where('album_id', $album->id)
                             ->count();
-                        
+
                         $photosBefore = \App\Models\Photo::query()
                             ->where('album_id', $album->id)
                             ->where(function ($query) use ($record) {
@@ -180,12 +180,16 @@ class PhotosRelationManager extends RelationManager
                                     });
                             })
                             ->count();
-                        
+
                         $currentPhotoIndex = $photosBefore;
-                        
+
                         $startOffset = max(0, $currentPhotoIndex);
+                        if ($startOffset + $limit > $totalPhotos) {
+                            $startOffset = max(0, $totalPhotos - $limit);
+                        }
+
                         $endOffset = min($totalPhotos, $startOffset + $limit);
-                        
+
                         $photos = \App\Models\Photo::query()
                             ->where('album_id', $album->id)
                             ->orderBy('created_at')
@@ -208,9 +212,13 @@ class PhotosRelationManager extends RelationManager
 
                         $currentIndex = $currentPhotoIndex - $startOffset;
 
+                        if ($currentIndex < 0) {
+                            $currentIndex = 0;
+                        }
+
                         return view('filament.albums.photo-gallery', [
                             'photos' => $photos,
-                            'currentIndex' => max(0, $currentIndex),
+                            'currentIndex' => $currentIndex,
                             'modalId' => 'viewGallery',
                             'albumId' => $album->id,
                             'totalPhotos' => $totalPhotos,
