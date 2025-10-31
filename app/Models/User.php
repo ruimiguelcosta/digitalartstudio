@@ -17,6 +17,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'email_verified_at',
     ];
 
     protected $hidden = [
@@ -37,8 +38,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsToMany(Role::class);
     }
 
+    public function managedAlbums(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Album::class, 'manager_id');
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->roles()->where('slug', 'admin')->exists();
+        return $this->roles()->whereIn('slug', ['admin', 'manager'])->exists();
     }
 }

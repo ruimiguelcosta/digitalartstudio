@@ -87,6 +87,7 @@ class PhotosRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists())
                     ->form([
                         FileUpload::make('path')
                             ->label('Fotografias')
@@ -146,6 +147,7 @@ class PhotosRelationManager extends RelationManager
             ])
             ->actions([
                 EditAction::make()
+                    ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists())
                     ->form([
                         FileUpload::make('path')
                             ->label('Fotografia')
@@ -189,7 +191,8 @@ class PhotosRelationManager extends RelationManager
                             $record->update($data);
                         }
                     }),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists()),
             ])
             ->bulkActions([
             ]);

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy([AlbumObserver::class])]
@@ -24,6 +25,7 @@ class Album extends Model
         'end_date',
         'status',
         'manager_email',
+        'manager_id',
     ];
 
     protected function casts(): array
@@ -40,6 +42,11 @@ class Album extends Model
         return $this->hasMany(Photo::class);
     }
 
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
     public function firstPhoto(): ?Photo
     {
         return $this->photos()->first();
@@ -52,6 +59,7 @@ class Album extends Model
         foreach ($words as $word) {
             $initials .= strtoupper(substr($word, 0, 1));
         }
+
         return $initials;
     }
 }

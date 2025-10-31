@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Albums;
 use App\Filament\Resources\Albums\Pages\CreateAlbum;
 use App\Filament\Resources\Albums\Pages\EditAlbum;
 use App\Filament\Resources\Albums\Pages\ListAlbums;
+use App\Filament\Resources\Albums\Pages\ViewAlbum;
 use App\Filament\Resources\Albums\RelationManagers\PhotosRelationManager;
 use App\Filament\Resources\Albums\Schemas\AlbumForm;
 use App\Filament\Resources\Albums\Tables\AlbumsTable;
@@ -43,6 +44,7 @@ class AlbumResource extends Resource
         return [
             'index' => ListAlbums::route('/'),
             'create' => CreateAlbum::route('/create'),
+            'view' => ViewAlbum::route('/{record}'),
             'edit' => EditAlbum::route('/{record}/edit'),
         ];
     }

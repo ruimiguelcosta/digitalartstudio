@@ -11,14 +11,14 @@ class SendAlbumManagerEmailJob implements ShouldQueue
 {
     use Queueable;
 
-    public $queue = 'send-emails';
-
     public function __construct(
         public string $email,
         public string $albumName,
         public string $password,
         public string $loginUrl
-    ) {}
+    ) {
+        $this->onQueue('send-emails');
+    }
 
     public function handle(): void
     {

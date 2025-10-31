@@ -14,8 +14,12 @@ class ListAlbums extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        $user = auth()->user();
+        $isManager = $user && $user->roles()->where('slug', 'manager')->exists();
+
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->visible(! $isManager),
         ];
     }
 
@@ -23,6 +27,12 @@ class ListAlbums extends ListRecords
     {
         return AlbumsTable::configure($table)
             ->modifyQueryUsing(function ($query) {
+                $user = auth()->user();
+
+                if ($user && $user->roles()->where('slug', 'manager')->exists()) {
+                    $query->where('manager_id', $user->id);
+                }
+
                 $query->with('photos');
             });
     }

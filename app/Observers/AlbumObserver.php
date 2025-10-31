@@ -7,7 +7,6 @@ use App\Jobs\SendAlbumManagerEmailJob;
 use App\Models\Album;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class AlbumObserver
@@ -35,31 +34,34 @@ class AlbumObserver
 
     private function createManagerAndSendEmail(Album $album): void
     {
-        if (User::query()->where('email', $album->manager_email)->exists()) {
-            return;
+        $user = User::query()->where('email', $album->manager_email)->first();
+
+        if (! $user) {
+            $password = Str::password(12);
+            $loginUrl = 'https://www.digitalartstudio.pt/admin';
+
+            $user = new User;
+            $user->name = "manager do album {$album->name}";
+            $user->email = $album->manager_email;
+            $user->password = $password;
+            $user->email_verified_at = now();
+            $user->save();
+
+            $managerRole = Role::query()->where('slug', 'manager')->first();
+            if ($managerRole) {
+                $user->roles()->attach($managerRole);
+            }
+
+            SendAlbumManagerEmailJob::dispatch(
+                $album->manager_email,
+                $album->name,
+                $password,
+                $loginUrl
+            );
         }
 
-        $password = Str::password(12);
-        $loginUrl = 'https://www.digitalartstudio.pt/admin';
-
-        $user = User::query()->create([
-            'name' => "manager do album {$album->name}",
-            'email' => $album->manager_email,
-            'password' => Hash::make($password),
-            'email_verified_at' => now(),
-        ]);
-
-        $managerRole = Role::query()->where('slug', 'manager')->first();
-        if ($managerRole) {
-            $user->roles()->attach($managerRole);
-        }
-
-        SendAlbumManagerEmailJob::dispatch(
-            $album->manager_email,
-            $album->name,
-            $password,
-            $loginUrl
-        );
+        $album->manager_id = $user->id;
+        $album->saveQuietly();
     }
 
     private function generateSlug(string $name): string

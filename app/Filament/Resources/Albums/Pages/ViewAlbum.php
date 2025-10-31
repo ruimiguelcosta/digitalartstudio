@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Albums\Pages;
 
 use App\Filament\Resources\Albums\AlbumResource;
-use Filament\Actions\DeleteAction;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Actions\EditAction;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditAlbum extends EditRecord
+class ViewAlbum extends ViewRecord
 {
     protected static string $resource = AlbumResource::class;
 
@@ -17,14 +17,20 @@ class EditAlbum extends EditRecord
         $user = auth()->user();
 
         if ($user && $user->roles()->where('slug', 'manager')->exists()) {
-            $this->redirect(static::getResource()::getUrl('view', ['record' => $record]));
+            if ($this->record->manager_id !== $user->id) {
+                $this->redirect(static::getResource()::getUrl('index'));
+            }
         }
     }
 
     protected function getHeaderActions(): array
     {
+        $user = auth()->user();
+        $isManager = $user && $user->roles()->where('slug', 'manager')->exists();
+
         return [
-            DeleteAction::make(),
+            EditAction::make()
+                ->visible(! $isManager),
         ];
     }
 }

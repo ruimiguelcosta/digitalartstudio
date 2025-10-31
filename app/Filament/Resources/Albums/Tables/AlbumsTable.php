@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Albums\Tables;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Grid;
@@ -76,8 +77,11 @@ class AlbumsTable
             ->filters([
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make(),
+                EditAction::make()
+                    ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists()),
+                DeleteAction::make()
+                    ->visible(fn () => ! auth()->user()?->roles()->where('slug', 'manager')->exists()),
             ])
             ->contentGrid([
                 'md' => 2,
@@ -85,6 +89,14 @@ class AlbumsTable
             ])
             ->defaultSort('created_at', 'desc')
             ->defaultPaginationPageOption(50)
-            ->paginationPageOptions([25, 50, 100]);
+            ->paginationPageOptions([25, 50, 100])
+            ->recordUrl(function ($record) {
+                $user = auth()->user();
+                $isManager = $user && $user->roles()->where('slug', 'manager')->exists();
+
+                return $isManager
+                    ? \App\Filament\Resources\Albums\AlbumResource::getUrl('view', ['record' => $record])
+                    : \App\Filament\Resources\Albums\AlbumResource::getUrl('edit', ['record' => $record]);
+            });
     }
 }
