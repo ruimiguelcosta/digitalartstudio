@@ -2,9 +2,58 @@
     x-data="{
         currentIndex: {{ $currentIndex }},
         photos: @js($photos),
+        albumId: '{{ $albumId }}',
+        currentOffset: {{ $currentOffset }},
+        totalPhotos: {{ $totalPhotos }},
+        isLoading: false,
+        hasMore: true,
+        async loadMorePhotos() {
+            if (this.isLoading || !this.hasMore) {
+                return;
+            }
+            
+            this.isLoading = true;
+            
+            try {
+                const response = await fetch('{{ url('/api/photos/load-more') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        album_id: this.albumId,
+                        offset: this.currentOffset,
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (data.photos && data.photos.length > 0) {
+                    this.photos = [...this.photos, ...data.photos];
+                    this.currentOffset += data.photos.length;
+                    this.hasMore = data.has_more;
+                } else {
+                    this.hasMore = false;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar mais fotos:', error);
+                this.hasMore = false;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        async checkAndLoadMore() {
+            const remaining = this.photos.length - this.currentIndex;
+            if (remaining <= 2 && this.hasMore && !this.isLoading) {
+                await this.loadMorePhotos();
+            }
+        },
         goToNext() {
             if (this.currentIndex < this.photos.length - 1) {
                 this.currentIndex++;
+                this.checkAndLoadMore();
             } else {
                 this.currentIndex = 0;
             }
@@ -18,8 +67,10 @@
         },
         goToPhoto(index) {
             this.currentIndex = index;
+            this.checkAndLoadMore();
         }
     }"
+    x-init="checkAndLoadMore()"
     x-on:keydown.left.window="goToPrev()"
     x-on:keydown.right.window="goToNext()"
 >
@@ -64,7 +115,7 @@
                 </button>
 
                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded z-10">
-                    <span x-text="`${currentIndex + 1} / ${photos.length}`"></span>
+                    <span x-text="`${currentIndex + 1} / ${totalPhotos}`"></span>
                 </div>
 
                 <div class="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 max-w-full overflow-x-auto px-4 pb-2 z-10">

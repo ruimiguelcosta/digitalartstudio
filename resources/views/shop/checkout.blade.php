@@ -37,44 +37,76 @@
             <div class="grid md:grid-cols-2 gap-8">
                 <div>
                     <h2 class="text-2xl font-serif font-bold mb-4 text-foreground">Fotos Selecionadas</h2>
-                    <div class="space-y-4">
+                    <div class="space-y-6">
                         @php
                             $photos = \App\Models\Photo::query()
                                 ->whereIn('id', collect($cart)->pluck('photo_id'))
                                 ->get()
                                 ->keyBy('id');
-                            $totalPrice = count($cart) * 10;
                         @endphp
-                        @foreach($cart as $item)
+                        @foreach($cart as $index => $item)
                             @php
                                 $photo = $photos->get($item['photo_id'] ?? null);
                                 $photoIndex = $item['photo_index'] ?? 0;
+                                $selectedServiceId = $item['service_id'] ?? null;
+                                $selectedServicePrice = $item['service_price'] ?? null;
                             @endphp
                             @if($photo)
-                                <div class="flex gap-4 items-center bg-card border border-border rounded-lg p-3">
-                                    <img
-                                        src="{{ \Illuminate\Support\Facades\URL::signedRoute('album.photo', ['path' => base64_encode($photo->path)]) }}"
-                                        alt="Foto {{ $photoIndex + 1 }}"
-                                        class="w-20 h-20 object-cover rounded"
-                                    />
-                                    <div class="flex-1">
-                                        <p class="text-sm text-muted-foreground">Foto {{ $photoIndex + 1 }}</p>
-                                        <p class="font-semibold text-foreground">€10.00</p>
+                                <div class="bg-card border border-border rounded-lg p-4">
+                                    <div class="flex gap-4 items-start mb-4">
+                                        <img
+                                            src="{{ \Illuminate\Support\Facades\URL::signedRoute('album.photo', ['path' => base64_encode($photo->path)]) }}"
+                                            alt="Foto {{ $photoIndex + 1 }}"
+                                            class="w-20 h-20 object-cover rounded flex-shrink-0"
+                                        />
+                                        <div class="flex-1">
+                                            <p class="text-sm text-muted-foreground mb-1">Foto {{ $photoIndex + 1 }}</p>
+                                            @if($selectedServiceId && $selectedServicePrice)
+                                                <p class="text-xs text-muted-foreground">{{ $item['service_name'] ?? 'Serviço selecionado' }}</p>
+                                                <p class="font-semibold text-foreground">€{{ number_format($selectedServicePrice, 2, ',', '.') }}</p>
+                                            @endif
+                                        </div>
+                                        <form action="{{ route('shop.cart.remove') }}" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="photo_id" value="{{ $photo->id }}">
+                                            <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground p-2">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
                                     </div>
-                                    <form action="{{ route('shop.cart.remove') }}" method="POST" class="inline">
-                                        @csrf
-                                        <input type="hidden" name="photo_id" value="{{ $photo->id }}">
-                                        <button type="submit" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground p-2">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </button>
-                                    </form>
+                                    <div>
+                                        <label class="block text-sm font-medium text-foreground mb-2">Escolher formato:</label>
+                                        <div class="space-y-2">
+                                            @foreach($services as $service)
+                                                <form action="{{ route('shop.cart.update-service') }}" method="POST" class="inline-block w-full">
+                                                    @csrf
+                                                    <input type="hidden" name="photo_id" value="{{ $photo->id }}">
+                                                    <input type="hidden" name="service_id" value="{{ $service->id }}">
+                                                    <button 
+                                                        type="submit"
+                                                        class="w-full text-left px-3 py-2 rounded-md border transition-colors {{ $selectedServiceId == $service->id ? 'border-primary bg-primary/10' : 'border-border hover:bg-accent' }}"
+                                                    >
+                                                        <div class="flex justify-between items-center">
+                                                            <span class="text-sm font-medium">{{ $service->name }}</span>
+                                                            <span class="text-sm font-semibold">€{{ number_format($service->price, 2, ',', '.') }}</span>
+                                                        </div>
+                                                    </button>
+                                                </form>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         @endforeach
                     </div>
                     <div class="mt-6 pt-6 border-t border-border">
+                        @php
+                            $totalPrice = collect($cart)->sum(function ($item) {
+                                return $item['service_price'] ?? 0;
+                            });
+                        @endphp
                         <div class="flex justify-between text-xl font-bold">
                             <span>Total:</span>
                             <span>€{{ number_format($totalPrice, 2, ',', '.') }}</span>

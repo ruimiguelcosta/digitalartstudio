@@ -164,9 +164,33 @@ class PhotosRelationManager extends RelationManager
                     ->modalWidth('7xl')
                     ->modalContent(function ($record, $livewire) {
                         $album = $livewire->ownerRecord;
+                        $limit = 25;
+                        
+                        $totalPhotos = \App\Models\Photo::query()
+                            ->where('album_id', $album->id)
+                            ->count();
+                        
+                        $photosBefore = \App\Models\Photo::query()
+                            ->where('album_id', $album->id)
+                            ->where(function ($query) use ($record) {
+                                $query->where('created_at', '<', $record->created_at)
+                                    ->orWhere(function ($q) use ($record) {
+                                        $q->where('created_at', '=', $record->created_at)
+                                            ->where('id', '<', $record->id);
+                                    });
+                            })
+                            ->count();
+                        
+                        $currentPhotoIndex = $photosBefore;
+                        
+                        $startOffset = max(0, $currentPhotoIndex);
+                        $endOffset = min($totalPhotos, $startOffset + $limit);
+                        
                         $photos = \App\Models\Photo::query()
                             ->where('album_id', $album->id)
                             ->orderBy('created_at')
+                            ->offset($startOffset)
+                            ->limit($limit)
                             ->get()
                             ->map(function ($photo) {
                                 $encodedPath = base64_encode($photo->path);
@@ -182,18 +206,15 @@ class PhotosRelationManager extends RelationManager
                             })
                             ->toArray();
 
-                        $currentIndex = 0;
-                        foreach ($photos as $index => $photo) {
-                            if ($photo['id'] === $record->id) {
-                                $currentIndex = $index;
-                                break;
-                            }
-                        }
+                        $currentIndex = $currentPhotoIndex - $startOffset;
 
                         return view('filament.albums.photo-gallery', [
                             'photos' => $photos,
-                            'currentIndex' => $currentIndex,
+                            'currentIndex' => max(0, $currentIndex),
                             'modalId' => 'viewGallery',
+                            'albumId' => $album->id,
+                            'totalPhotos' => $totalPhotos,
+                            'currentOffset' => $endOffset,
                         ]);
                     })
                     ->modalSubmitAction(false)

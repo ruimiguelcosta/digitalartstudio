@@ -28,4 +28,5 @@ Route::prefix('photos')->group(function () {
     Route::get('{photo}', ShowPhotoAction::class);
     Route::patch('{photo}', UpdatePhotoAction::class);
     Route::delete('{photo}', DestroyPhotoAction::class);
+    Route::post('load-more', \App\Actions\Http\Photos\LoadMorePhotosAction::class)->name('photos.load-more');
 });

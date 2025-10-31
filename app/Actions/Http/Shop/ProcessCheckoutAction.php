@@ -19,8 +19,17 @@ class ProcessCheckoutAction
             return redirect()->route('shop.dashboard')->with('error', 'O seu carrinho está vazio.');
         }
 
+        foreach ($cart as $item) {
+            if (! isset($item['service_id']) || ! isset($item['service_price'])) {
+                return redirect()->route('shop.checkout')
+                    ->with('error', 'Por favor, selecione um formato para todas as fotos antes de finalizar.');
+            }
+        }
+
         $validated = $request->validated();
-        $totalPrice = count($cart) * 10;
+        $totalPrice = collect($cart)->sum(function ($item) {
+            return $item['service_price'] ?? 0;
+        });
 
         Session::forget('shop_cart');
 

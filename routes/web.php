@@ -77,9 +77,17 @@ Route::get('/shop/checkout', function () {
     $albumId = session('shop_album_id');
     $album = \App\Models\Album::query()->find($albumId);
     $userEmail = session('shop_user_email');
+    $services = \App\Models\Service::query()->orderBy('price')->get();
 
-    return view('shop.checkout', ['cart' => $cart, 'album' => $album, 'userEmail' => $userEmail]);
+    return view('shop.checkout', [
+        'cart' => $cart,
+        'album' => $album,
+        'userEmail' => $userEmail,
+        'services' => $services,
+    ]);
 })->name('shop.checkout');
+
+Route::post('/shop/cart/update-service', \App\Actions\Http\Shop\UpdateCartServiceAction::class)->name('shop.cart.update-service');
 
 Route::post('/shop/checkout', \App\Actions\Http\Shop\ProcessCheckoutAction::class)->name('shop.checkout.process');
 
