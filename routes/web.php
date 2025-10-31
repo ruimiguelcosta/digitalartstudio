@@ -18,6 +18,7 @@ Route::get('/shop', function () {
     if (session('shop_user_email')) {
         return redirect()->route('shop.dashboard');
     }
+
     return view('shop');
 })->name('shop');
 
@@ -98,6 +99,10 @@ Route::post('/shop/logout', function () {
 
     return redirect()->route('shop')->with('success', 'Sessão terminada com sucesso.');
 })->name('shop.logout');
+
+Route::get('/login', function () {
+    return view('login');
+})->middleware('guest')->name('login');
 
 Route::post('/login', LoginAction::class)->middleware('guest')->name('login.post');
 
