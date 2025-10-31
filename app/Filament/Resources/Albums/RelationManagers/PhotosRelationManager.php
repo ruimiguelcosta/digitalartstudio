@@ -46,6 +46,7 @@ class PhotosRelationManager extends RelationManager
                     ])
                     ->validationAttribute('Fotografia')
                     ->required()
+                    ->multiple()
                     ->columnSpanFull(),
                 TextInput::make('original_filename')
                     ->label('Nome do Ficheiro Original')
@@ -111,26 +112,26 @@ class PhotosRelationManager extends RelationManager
                     ])
                     ->using(function (array $data, $livewire) {
                         $album = $livewire->ownerRecord;
-                        
+
                         $photoCount = \App\Models\Photo::query()->where('album_id', $album->id)->count();
                         $maxCount = config('photos.max_count');
-                        
+
                         if ($photoCount >= $maxCount) {
                             throw new \Exception("Limite máximo de {$maxCount} fotos por álbum atingido.");
                         }
-                        
+
                         $nextNumber = $photoCount + 1;
                         $initials = $album->getInitials();
                         $reference = $initials.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
 
                         $path = $data['path'];
                         $extension = pathinfo($path, PATHINFO_EXTENSION);
-                        
+
                         $originalSize = \Illuminate\Support\Facades\Storage::disk('local')->size($path);
-                        
+
                         $newFilename = $album->slug.str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT).'.'.$extension;
                         $newPath = "photos/{$album->slug}/{$newFilename}";
-                        
+
                             \Illuminate\Support\Facades\Storage::disk('local')->move($path, $newPath);
 
                         \App\Models\Photo::query()->create([
@@ -170,14 +171,14 @@ class PhotosRelationManager extends RelationManager
                             $album = $livewire->ownerRecord;
                             $extension = pathinfo($data['path'], PATHINFO_EXTENSION);
                             $originalSize = \Illuminate\Support\Facades\Storage::disk('local')->size($data['path']);
-                            
+
                             $photoCount = \App\Models\Photo::query()->where('album_id', $album->id)->where('id', '!=', $record->id)->count() + 1;
                             $newFilename = $album->slug.str_pad((string) $photoCount, 5, '0', STR_PAD_LEFT).'.'.$extension;
                             $newPath = "photos/{$album->slug}/{$newFilename}";
-                            
+
                             \Illuminate\Support\Facades\Storage::disk('local')->delete($record->path);
                             \Illuminate\Support\Facades\Storage::disk('local')->move($data['path'], $newPath);
-                            
+
                             $record->update([
                                 'path' => $newPath,
                                 'original_filename' => $newFilename,
